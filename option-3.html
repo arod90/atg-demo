@@ -98,7 +98,8 @@
   .hero-blurb b{font-weight:700;}
   .hero-blurb i{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;color:var(--fg-dim);}
   .hero-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line-2);}
-  .hero-meta .cell{padding:18px 0 0;border-right:1px solid var(--line-2);padding-right:14px;}
+  .hero-meta .cell{padding:18px 14px 0 0;border-right:1px solid var(--line-2);}
+  .hero-meta .cell:not(:first-child){padding-left:clamp(18px,3.2vw,28px);}
   .hero-meta .cell:last-child{border-right:none;}
   .hero-meta .label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-mute);margin-bottom:8px;}
   .hero-meta .val{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-.01em;}
