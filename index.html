@@ -258,15 +258,44 @@
   .wordmark-meta strong{display:block;color:var(--fg);font-weight:400;font-family:var(--sans);font-size:13px;letter-spacing:.02em;text-transform:none;margin-top:8px;}
   @media (max-width:760px){.wordmark-meta{grid-template-columns:1fr 1fr;}}
 
+  /* concept switcher — reveals when cursor nears top center */
+  .concept-switcher-root{
+    position:fixed;top:14px;left:50%;z-index:80;transform:translateX(-50%);
+    pointer-events:none;
+    --sw-in:.52s cubic-bezier(.34,.72,.2,1);
+    --sw-out:.2s cubic-bezier(.45,0,.85,.45);
+  }
+  .concept-switcher-root .switcher{
+    display:flex;gap:4px;padding:4px;background:rgba(19,17,15,.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line);border-radius:999px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    opacity:0;transform:translateY(-12px) scale(.97);pointer-events:none;visibility:hidden;
+    transition:opacity var(--sw-out), transform var(--sw-out), visibility 0s linear var(--sw-out);
+  }
+  .concept-switcher-root.is-open .switcher{
+    opacity:1;transform:translateY(0) scale(1);pointer-events:auto;visibility:visible;
+    transition:opacity var(--sw-in), transform var(--sw-in), visibility 0s;
+  }
+  .concept-switcher-root .switcher a{padding:8px 16px;border-radius:999px;color:var(--fg-dim);text-decoration:none;transition:color .3s ease, background .3s ease;}
+  .concept-switcher-root .switcher a.active{background:var(--fg);color:var(--bg);}
+  .concept-switcher-root .switcher a:not(.active):hover{color:var(--fg);}
+  @media (hover:none) and (pointer:coarse){
+    .concept-switcher-root .switcher{opacity:1;transform:none;pointer-events:auto;visibility:visible;transition:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .concept-switcher-root .switcher,.concept-switcher-root.is-open .switcher{transition-duration:.01ms;}
+  }
+
 </style>
 </head>
 <body>
 <div class="grain"></div>
 
-<div style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:80;display:flex;gap:4px;padding:4px;background:rgba(19,17,15,.7);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:999px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;">
-  <a href="index.html" style="padding:8px 16px;border-radius:999px;background:var(--fg);color:var(--bg);text-decoration:none;">01 · Editorial Dark</a>
-  <a href="option-2.html" style="padding:8px 16px;border-radius:999px;color:var(--fg-dim);text-decoration:none;">02 · Quiet Light</a>
-  <a href="option-3.html" style="padding:8px 16px;border-radius:999px;color:var(--fg-dim);text-decoration:none;">03 · Studio</a>
+<div class="concept-switcher-root" id="conceptSwitcherRoot" aria-label="Switch design concept">
+  <div class="switcher">
+    <a class="active" href="index.html">01 · Editorial Dark</a>
+    <a href="option-2.html">02 · Quiet Light</a>
+    <a href="option-3.html">03 · Studio</a>
+  </div>
 </div>
 
 <!-- ============ NAV ============ -->
@@ -721,6 +750,39 @@
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 24);
   }, {passive:true});
+
+  // Concept switcher: show when cursor is in top-center band; quick hide on leave
+  (() => {
+    const root = document.getElementById('conceptSwitcherRoot');
+    if (!root) return;
+    const el = root.querySelector('.switcher');
+    if (!el) return;
+    const topBand = 90;
+    const edgePad = 18;
+    const hideAfter = 90;
+    let hideTimer = 0;
+    function inRevealZone(x, y) {
+      const w = window.innerWidth, cx = w / 2;
+      const half = Math.min(w * 0.24, 228);
+      return y >= 0 && y <= topBand && Math.abs(x - cx) <= half;
+    }
+    function overSwitcher(x, y) {
+      const r = el.getBoundingClientRect();
+      return x >= r.left - edgePad && x <= r.right + edgePad && y >= r.top - edgePad && y <= r.bottom + edgePad;
+    }
+    function onMove(ev) {
+      const x = ev.clientX, y = ev.clientY;
+      const show = inRevealZone(x, y) || (root.classList.contains('is-open') && overSwitcher(x, y));
+      if (show) {
+        clearTimeout(hideTimer);
+        root.classList.add('is-open');
+      } else {
+        clearTimeout(hideTimer);
+        hideTimer = window.setTimeout(() => root.classList.remove('is-open'), hideAfter);
+      }
+    }
+    document.addEventListener('mousemove', onMove, { passive: true });
+  })();
 
   // Hero image cycle
   const imgs = [...document.querySelectorAll('.hero-img')];
