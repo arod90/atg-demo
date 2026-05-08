@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ATG · Concept 03 — Editorial Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A09;
+    --bg-2:#121210;
+    --bg-3:#1B1A17;
+    --fg:#ECE9E2;
+    --fg-dim:#8E887C;
+    --fg-mute:#5C574F;
+    --line:#1F1D1A;
+    --line-2:#2A2722;
+    --accent:#C9A86A;
+    --serif:'Instrument Serif', serif;
+    --display:'Archivo', system-ui, sans-serif;
+    --sans:'Archivo', system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    --max:1480px;
+    --pad:clamp(20px, 4.4vw, 64px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;scroll-padding-top:96px;}
+  html,body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  body{overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  img{display:block;max-width:100%;}
+  ::selection{background:var(--accent);color:var(--bg);}
+
+  /* grain overlay */
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");}
+
+  /* concept switcher */
+  .switcher{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:80;display:flex;gap:4px;padding:4px;background:rgba(10,10,9,.7);backdrop-filter:blur(14px);border:1px solid var(--line-2);border-radius:999px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+  .switcher a{padding:8px 16px;border-radius:999px;color:var(--fg-dim);transition:color .3s ease, background .3s ease;}
+  .switcher a.active{background:var(--fg);color:var(--bg);}
+  .switcher a:not(.active):hover{color:var(--fg);}
+
+  /* ---------- NAV ---------- */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:22px var(--pad);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:32px;transition:background .5s cubic-bezier(.4,0,.2,1), backdrop-filter .5s ease, border-color .5s ease, padding .35s ease;border-bottom:1px solid transparent;}
+  .nav.scrolled{background:rgba(10,10,9,.82);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-bottom-color:var(--line);padding:14px var(--pad);}
+  .nav-left,.nav-right{display:flex;align-items:center;gap:36px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;}
+  .nav-right{justify-content:flex-end;}
+  .nav-mid{display:flex;justify-content:center;align-items:center;}
+  .brand{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.18em;color:var(--fg);text-transform:uppercase;}
+  .brand-mark{width:38px;height:38px;border:1px solid var(--fg);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0;}
+  .nav-link{position:relative;color:var(--fg-dim);transition:color .3s ease;padding:6px 0;}
+  .nav-link:hover{color:var(--fg);}
+  .nav-link::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .45s cubic-bezier(.7,0,.2,1);}
+  .nav-link:hover::after{transform:scaleX(1);transform-origin:left;}
+  @media (max-width:1100px){.nav-left .nav-link, .nav-right .nav-link{display:none;}.nav{grid-template-columns:auto 1fr auto;}.nav-left{display:none;}}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;min-height:100vh;padding:148px var(--pad) 60px;display:flex;flex-direction:column;justify-content:space-between;gap:60px;}
+  .hero-eyebrow{display:flex;align-items:center;justify-content:space-between;gap:24px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-dim);}
+  .hero-eyebrow .left{display:flex;align-items:center;gap:14px;}
+  .hero-eyebrow .left .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent);}
+  .hero-eyebrow .right{display:flex;align-items:center;gap:18px;color:var(--fg-mute);}
+  .hero-eyebrow .right span{display:inline-flex;align-items:center;gap:8px;}
+  .hero-eyebrow .right span::before{content:"";display:block;width:14px;height:1px;background:var(--line-2);}
+
+  .hero-title{font-family:var(--display);font-weight:900;font-size:clamp(56px, 11.4vw, 192px);line-height:.86;letter-spacing:-.03em;text-transform:uppercase;}
+  .hero-title .row{display:block;}
+  .hero-title em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;letter-spacing:-.01em;font-size:1.04em;line-height:1;display:inline-block;transform:translateY(.04em);}
+  .hero-title .pad{display:inline-block;width:.6em;}
+  .hero-title .indent{padding-left:1.2em;}
+
+  .hero-bottom{display:grid;grid-template-columns:1.1fr 1fr;gap:64px;align-items:end;}
+  @media (max-width:900px){.hero-bottom{grid-template-columns:1fr;gap:32px;}}
+  .hero-blurb{font-size:18px;line-height:1.5;max-width:48ch;color:var(--fg);}
+  .hero-blurb b{font-weight:700;}
+  .hero-blurb i{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;color:var(--fg-dim);}
+  .hero-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line-2);}
+  .hero-meta .cell{padding:18px 0 0;border-right:1px solid var(--line-2);padding-right:14px;}
+  .hero-meta .cell:last-child{border-right:none;}
+  .hero-meta .label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-mute);margin-bottom:8px;}
+  .hero-meta .val{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-.01em;}
+  .hero-meta .val em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);}
+
+  .hero-images{display:flex;gap:14px;overflow:hidden;margin-top:56px;}
+  .hero-images .frame{flex:1;aspect-ratio:4/5;overflow:hidden;background:var(--bg-2);position:relative;border:1px solid var(--line);}
+  .hero-images .frame .img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 1.4s cubic-bezier(.7,0,.2,1);}
+  .hero-images .frame:hover .img{transform:scale(1.05);}
+  .hero-images .frame .tag{position:absolute;bottom:12px;left:12px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg);background:rgba(10,10,9,.6);backdrop-filter:blur(6px);padding:6px 10px;border:1px solid rgba(255,255,255,.1);}
+
+  /* ---------- KEYWORD WALL ---------- */
+  .kwall{padding:140px 0 60px;border-top:1px solid var(--line);position:relative;overflow:hidden;}
+  .kwall .row{display:flex;gap:64px;white-space:nowrap;animation:kw-scroll 60s linear infinite;}
+  .kwall .row.r2{animation-direction:reverse;animation-duration:80s;opacity:.55;}
+  .kwall .row.r3{animation-duration:50s;opacity:.3;}
+  .kwall h2{font-family:var(--display);font-weight:900;font-size:clamp(72px, 12vw, 200px);line-height:1;text-transform:lowercase;letter-spacing:-.03em;color:var(--fg);}
+  .kwall h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .kwall h2 span.outline{-webkit-text-stroke:1px var(--fg);color:transparent;}
+  @keyframes kw-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  /* ---------- INTRO STATEMENT ---------- */
+  .intro{padding:160px var(--pad);max-width:var(--max);margin:0 auto;}
+  .intro-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:48px;display:flex;align-items:center;gap:14px;}
+  .intro-eyebrow .bar{width:48px;height:1px;background:var(--accent);}
+  .intro-statement{font-family:var(--display);font-weight:500;font-size:clamp(28px, 3.6vw, 48px);line-height:1.2;letter-spacing:-.015em;max-width:24ch;}
+  .intro-statement b{font-weight:700;}
+  .intro-statement i{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);}
+  .intro-row{display:grid;grid-template-columns:1.1fr 1fr;gap:80px;align-items:end;margin-top:80px;}
+  @media (max-width:900px){.intro-row{grid-template-columns:1fr;gap:40px;}}
+  .intro-supporting{font-size:16px;line-height:1.6;color:var(--fg-dim);max-width:42ch;}
+  .intro-cta{display:inline-flex;align-items:center;justify-content:center;width:170px;height:170px;border-radius:50%;border:1px solid var(--line-2);font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg);transition:background .4s ease, color .4s ease, transform .4s ease;flex-shrink:0;}
+  .intro-cta:hover{background:var(--accent);color:var(--bg);transform:rotate(8deg);}
+
+  /* ---------- AWARDS / RECOGNITIONS ---------- */
+  .recogs{padding:120px 0;border-top:1px solid var(--line);}
+  .recogs-head{padding:0 var(--pad);max-width:var(--max);margin:0 auto 80px;display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:end;}
+  .recogs-head .num{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);}
+  .recogs-head h2{font-family:var(--display);font-weight:900;font-size:clamp(44px, 7vw, 110px);line-height:.94;text-transform:uppercase;letter-spacing:-.025em;}
+  .recogs-head h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .recog{padding:0 var(--pad);max-width:var(--max);margin:0 auto;}
+  .recog-row{display:grid;grid-template-columns:80px 1fr 1.6fr 200px;gap:32px;padding:48px 0;border-top:1px solid var(--line-2);align-items:start;transition:padding .35s ease;cursor:pointer;}
+  .recog-row:last-child{border-bottom:1px solid var(--line-2);}
+  .recog-row:hover{padding:60px 0;}
+  .recog-row:hover .recog-img{opacity:1;transform:translateX(0) scale(1);}
+  .recog-num{font-family:var(--display);font-weight:900;font-size:64px;line-height:1;letter-spacing:-.02em;color:var(--fg);}
+  .recog-meta{display:flex;flex-direction:column;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-dim);}
+  .recog-meta strong{color:var(--fg);font-weight:500;}
+  .recog-body h3{font-family:var(--display);font-weight:700;font-size:clamp(24px, 2.6vw, 36px);line-height:1.1;letter-spacing:-.015em;margin-bottom:12px;text-transform:uppercase;}
+  .recog-body h3 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .recog-body p{font-size:15px;line-height:1.6;color:var(--fg-dim);margin-bottom:18px;max-width:50ch;}
+  .recog-body a{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg);border-bottom:1px solid var(--line-2);padding-bottom:6px;transition:border-color .3s ease, color .3s ease;}
+  .recog-body a:hover{color:var(--accent);border-color:var(--accent);}
+  .recog-img{width:200px;aspect-ratio:4/3;background-size:cover;background-position:center;opacity:.5;transform:translateX(-12px) scale(.96);transition:opacity .5s ease, transform .5s ease;}
+  @media (max-width:980px){.recog-row{grid-template-columns:60px 1fr;gap:20px;padding:32px 0;}.recog-meta{grid-column:1/3;flex-direction:row;flex-wrap:wrap;gap:24px;}.recog-img{display:none;}.recog-row:hover{padding:36px 0;}}
+
+  /* ---------- SECTORS WITH METADATA ---------- */
+  .sectors{padding:140px var(--pad);max-width:var(--max);margin:0 auto;}
+  .sectors-head{margin-bottom:80px;display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:end;}
+  .sectors-head .num{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);}
+  .sectors-head h2{font-family:var(--display);font-weight:900;font-size:clamp(44px, 7vw, 110px);line-height:.94;text-transform:uppercase;letter-spacing:-.025em;max-width:13ch;}
+  .sectors-head h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .sector-card{display:grid;grid-template-columns:1fr 1.4fr;gap:60px;padding:60px 0;border-top:1px solid var(--line-2);align-items:center;}
+  .sector-card:last-child{border-bottom:1px solid var(--line-2);}
+  @media (max-width:900px){.sector-card{grid-template-columns:1fr;gap:32px;}}
+  .sector-info h3{font-family:var(--display);font-weight:800;font-size:clamp(36px, 4.8vw, 64px);line-height:1;text-transform:uppercase;letter-spacing:-.025em;margin-bottom:24px;}
+  .sector-info h3 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .sector-info p{font-size:16px;line-height:1.65;color:var(--fg-dim);max-width:42ch;margin-bottom:32px;}
+  .sector-data{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line-2);}
+  .sector-data .cell{padding:18px 16px 0 0;border-right:1px solid var(--line-2);}
+  .sector-data .cell:last-child{border-right:none;}
+  .sector-data .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-mute);margin-bottom:6px;}
+  .sector-data .lbl::after{content:" -";color:var(--fg-mute);}
+  .sector-data .val{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em;}
+  .sector-img{position:relative;aspect-ratio:5/4;overflow:hidden;border:1px solid var(--line);}
+  .sector-img .img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 1.6s cubic-bezier(.7,0,.2,1);}
+  .sector-card:hover .sector-img .img{transform:scale(1.04);}
+  .sector-img .tag{position:absolute;top:18px;left:18px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg);background:rgba(10,10,9,.6);backdrop-filter:blur(6px);padding:8px 12px;border:1px solid rgba(255,255,255,.1);}
+
+  /* ---------- VALUES ---------- */
+  .values{padding:140px var(--pad);max-width:var(--max);margin:0 auto;border-top:1px solid var(--line);}
+  .values-head{margin-bottom:80px;}
+  .values-head .num{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:block;}
+  .values-stack{font-family:var(--display);font-weight:900;font-size:clamp(48px, 8.4vw, 132px);line-height:.92;text-transform:uppercase;letter-spacing:-.03em;}
+  .values-stack .l{display:block;}
+  .values-stack .l.dim{color:transparent;-webkit-text-stroke:1px var(--fg-mute);}
+  .values-stack .l em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;letter-spacing:-.01em;}
+  .values-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line-2);margin-top:80px;}
+  @media (max-width:900px){.values-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.values-grid{grid-template-columns:1fr;}}
+  .value{padding:36px 28px 36px 0;border-right:1px solid var(--line-2);position:relative;}
+  .value:last-child{border-right:none;}
+  .value .num{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--accent);margin-bottom:36px;}
+  .value h4{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.01em;text-transform:uppercase;margin-bottom:14px;}
+  .value h4 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .value p{font-size:14px;line-height:1.6;color:var(--fg-dim);}
+
+  /* ---------- FAQ ---------- */
+  .faq{padding:140px var(--pad);max-width:var(--max);margin:0 auto;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1.6fr;gap:80px;align-items:start;}
+  @media (max-width:900px){.faq{grid-template-columns:1fr;gap:40px;}}
+  .faq-head .num{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:block;}
+  .faq-head h2{font-family:var(--display);font-weight:900;font-size:clamp(40px, 5.4vw, 84px);line-height:.95;text-transform:uppercase;letter-spacing:-.025em;margin-bottom:32px;}
+  .faq-head h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .faq-head p{font-size:15px;line-height:1.6;color:var(--fg-dim);margin-bottom:32px;max-width:32ch;}
+  .faq-cta{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--line-2);padding:14px 22px;border-radius:999px;transition:background .35s ease, color .35s ease, border-color .35s ease;}
+  .faq-cta:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+  .faq-list{display:flex;flex-direction:column;border-top:1px solid var(--line-2);}
+  .faq-item{border-bottom:1px solid var(--line-2);padding:28px 0;cursor:pointer;}
+  .faq-item-head{display:grid;grid-template-columns:60px 1fr 28px;gap:16px;align-items:center;}
+  .faq-num{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--accent);}
+  .faq-q{font-family:var(--display);font-weight:600;font-size:clamp(18px, 1.8vw, 22px);letter-spacing:-.005em;color:var(--fg);transition:color .3s ease;}
+  .faq-item:hover .faq-q{color:var(--accent);}
+  .faq-icon{width:24px;height:24px;border:1px solid var(--line-2);border-radius:50%;position:relative;transition:transform .35s ease, border-color .3s ease;}
+  .faq-icon::before,.faq-icon::after{content:"";position:absolute;left:50%;top:50%;background:var(--fg);transition:opacity .3s ease, background .3s ease;}
+  .faq-icon::before{width:10px;height:1px;transform:translate(-50%,-50%);}
+  .faq-icon::after{width:1px;height:10px;transform:translate(-50%,-50%);}
+  .faq-item.open .faq-icon{border-color:var(--accent);transform:rotate(180deg);}
+  .faq-item.open .faq-icon::after{opacity:0;}
+  .faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.7,0,.2,1);}
+  .faq-a > div{overflow:hidden;}
+  .faq-item.open .faq-a{grid-template-rows:1fr;}
+  .faq-a-inner{padding:24px 0 0 76px;font-size:15px;line-height:1.65;color:var(--fg-dim);max-width:60ch;}
+
+  /* ---------- PARTNERS ---------- */
+  .partners{padding:120px var(--pad);max-width:var(--max);margin:0 auto;border-top:1px solid var(--line);}
+  .partners-head{font-family:var(--display);font-weight:900;font-size:clamp(56px, 9vw, 156px);line-height:.92;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:80px;}
+  .partners-head em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .partners-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line-2);}
+  @media (max-width:900px){.partners-grid{grid-template-columns:repeat(2,1fr);}}
+  .partner{aspect-ratio:2/1;display:grid;place-items:center;border-right:1px solid var(--line-2);border-bottom:1px solid var(--line-2);padding:32px;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-mute);transition:color .3s ease, background .4s ease;}
+  .partner:hover{color:var(--fg);background:var(--bg-2);}
+  .partner:nth-child(4n){border-right:none;}
+  .partner:nth-last-child(-n+4){border-bottom:none;}
+  @media (max-width:900px){.partner:nth-child(4n){border-right:1px solid var(--line-2);}.partner:nth-child(2n){border-right:none;}.partner:nth-last-child(-n+4){border-bottom:1px solid var(--line-2);}.partner:nth-last-child(-n+2){border-bottom:none;}}
+
+  /* ---------- FOOTER CTA ---------- */
+  .foot-cta{padding:160px var(--pad) 100px;max-width:var(--max);margin:0 auto;border-top:1px solid var(--line);}
+  .foot-cta-num{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;display:block;}
+  .foot-cta h2{font-family:var(--display);font-weight:900;font-size:clamp(64px, 11vw, 200px);line-height:.88;text-transform:uppercase;letter-spacing:-.035em;margin-bottom:48px;}
+  .foot-cta h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;}
+  .foot-cta-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:60px;border-top:1px solid var(--line-2);padding-top:48px;}
+  @media (max-width:900px){.foot-cta-row{grid-template-columns:1fr;gap:32px;}}
+  .foot-cta-row .lede{font-size:18px;line-height:1.55;color:var(--fg-dim);max-width:36ch;}
+  .foot-cta-row .lede i{font-family:var(--serif);font-style:italic;color:var(--accent);}
+  .foot-cta-link{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--fg-mute);margin-bottom:8px;}
+  .foot-cta-row a.big{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-.005em;color:var(--fg);transition:color .3s ease;display:block;margin-bottom:14px;}
+  .foot-cta-row a.big:hover{color:var(--accent);}
+
+  /* ---------- FOOTER ---------- */
+  footer{padding:60px var(--pad) 40px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-mute);}
+  .foot-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:48px;max-width:var(--max);margin:0 auto;}
+  @media (max-width:900px){.foot-grid{grid-template-columns:repeat(2,1fr);}}
+  .foot-grid h5{font-size:11px;letter-spacing:.22em;color:var(--fg-mute);margin-bottom:18px;font-weight:500;}
+  .foot-grid a, .foot-grid li{color:var(--fg);display:block;margin-bottom:10px;font-size:12px;font-weight:400;letter-spacing:.04em;text-transform:none;font-family:var(--sans);}
+  .foot-grid a:hover{color:var(--accent);}
+  .foot-base{display:flex;justify-content:space-between;align-items:center;max-width:var(--max);margin:60px auto 0;padding-top:32px;border-top:1px solid var(--line);font-size:10px;letter-spacing:.2em;}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.4,0,.2,1), transform .9s cubic-bezier(.4,0,.2,1);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  .reveal-1{transition-delay:.1s;}
+  .reveal-2{transition-delay:.2s;}
+  .reveal-3{transition-delay:.3s;}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<div class="switcher">
+  <a href="index.html">01 · Editorial Dark</a>
+  <a href="option-2.html">02 · Quiet Light</a>
+  <a href="option-3.html" class="active">03 · Studio</a>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a class="nav-link" href="#about">About ATG</a>
+    <a class="nav-link" href="#sectors">Services</a>
+    <a class="nav-link" href="#recogs">Media &amp; Awards</a>
+  </div>
+  <div class="nav-mid">
+    <a href="#" class="brand"><span class="brand-mark">A</span> ATG</a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="#contact">Contact</a>
+    <a class="nav-link" href="#sectors">Portfolio</a>
+    <a class="nav-link" href="#contact">Enquire</a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-eyebrow reveal in">
+    <div class="left"><span class="dot"></span> ATG · Advanced Technology Group</div>
+    <div class="right">
+      <span>Miami</span>
+      <span>Plano</span>
+      <span>Est. 2014</span>
+      <span>Lic # EF20001965</span>
+    </div>
+  </div>
+
+  <h1 class="hero-title reveal reveal-1 in">
+    <span class="row">Transforming</span>
+    <span class="row indent">homes,</span>
+    <span class="row">businesses</span>
+    <span class="row indent">&amp; <em>venues.</em></span>
+  </h1>
+
+  <div class="hero-bottom reveal reveal-2 in">
+    <p class="hero-blurb">
+      <b>ATG is a Miami-based provider</b> of high-end audio, video, lighting and automation solutions <i>—</i> designed and integrated <b>by an owner-led team</b>, hands-on from start to finish.
+    </p>
+    <div class="hero-meta">
+      <div class="cell"><div class="label">Practice</div><div class="val">Audio · Video · <em>Lighting</em></div></div>
+      <div class="cell"><div class="label">Coverage</div><div class="val">FL · TX · <em>Caribbean</em></div></div>
+      <div class="cell"><div class="label">Since</div><div class="val">2014<em>.</em></div></div>
+    </div>
+  </div>
+
+  <div class="hero-images reveal reveal-3 in">
+    <div class="frame">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_848378a7140f465bb43ba57ca4a8a384~mv2.jpg/v1/fill/w_1200,h_1500,fp_0.49_0.25,q_90,enc_avif,quality_auto/a358fe_848378a7140f465bb43ba57ca4a8a384~mv2.jpg')"></div>
+      <span class="tag">Brightline · FL</span>
+    </div>
+    <div class="frame">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_97ef36253ca34c15aea926a4a6f32069~mv2.jpg/v1/fill/w_1200,h_1500,fp_0.29_0.49,q_90,enc_avif,quality_auto/a358fe_97ef36253ca34c15aea926a4a6f32069~mv2.jpg')"></div>
+      <span class="tag">Private Theater</span>
+    </div>
+    <div class="frame">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_5b5ea36e15ce452594ae1d15b7ae9530~mv2.jpg/v1/fill/w_1200,h_1500,fp_0.4_0.34,q_90,enc_avif,quality_auto/a358fe_5b5ea36e15ce452594ae1d15b7ae9530~mv2.jpg')"></div>
+      <span class="tag">Gulliver Prep</span>
+    </div>
+    <div class="frame">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_631120683aec40ac9c46b44d569770b9~mv2.jpg/v1/fill/w_1200,h_1500,fp_0.75_0.48,q_90,enc_avif,quality_auto/a358fe_631120683aec40ac9c46b44d569770b9~mv2.jpg')"></div>
+      <span class="tag">Conference</span>
+    </div>
+    <div class="frame">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_569dd35da33f4cd18226ce1dd0b33ae3~mv2.webp/v1/fill/w_1200,h_1500,q_90,enc_avif,quality_auto/a358fe_569dd35da33f4cd18226ce1dd0b33ae3~mv2.webp')"></div>
+      <span class="tag">Zemi Beach</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ KEYWORD WALL ============ -->
+<section class="kwall" aria-hidden="true">
+  <div class="row">
+    <h2><span>audio video integration</span><span>&nbsp;&nbsp;</span><span class="outline">smart home miami</span><span>&nbsp;&nbsp;</span><span><em>lighting design</em></span><span>&nbsp;&nbsp;</span><span class="outline">control4 dealer</span><span>&nbsp;&nbsp;</span><span>crestron certified</span><span>&nbsp;&nbsp;</span></h2>
+    <h2><span>audio video integration</span><span>&nbsp;&nbsp;</span><span class="outline">smart home miami</span><span>&nbsp;&nbsp;</span><span><em>lighting design</em></span><span>&nbsp;&nbsp;</span><span class="outline">control4 dealer</span><span>&nbsp;&nbsp;</span><span>crestron certified</span><span>&nbsp;&nbsp;</span></h2>
+  </div>
+  <div class="row r2">
+    <h2><span class="outline">led video walls</span><span>&nbsp;&nbsp;</span><span><em>home theaters</em></span><span>&nbsp;&nbsp;</span><span>conference rooms</span><span>&nbsp;&nbsp;</span><span class="outline">distributed audio</span><span>&nbsp;&nbsp;</span><span>motorized shades</span><span>&nbsp;&nbsp;</span></h2>
+    <h2><span class="outline">led video walls</span><span>&nbsp;&nbsp;</span><span><em>home theaters</em></span><span>&nbsp;&nbsp;</span><span>conference rooms</span><span>&nbsp;&nbsp;</span><span class="outline">distributed audio</span><span>&nbsp;&nbsp;</span><span>motorized shades</span><span>&nbsp;&nbsp;</span></h2>
+  </div>
+  <div class="row r3">
+    <h2><span><em>av integrators</em></span><span>&nbsp;&nbsp;</span><span class="outline">stadiums &amp; venues</span><span>&nbsp;&nbsp;</span><span>dolby atmos</span><span>&nbsp;&nbsp;</span><span class="outline">hospitality av</span><span>&nbsp;&nbsp;</span><span>cedia · avixa</span><span>&nbsp;&nbsp;</span></h2>
+    <h2><span><em>av integrators</em></span><span>&nbsp;&nbsp;</span><span class="outline">stadiums &amp; venues</span><span>&nbsp;&nbsp;</span><span>dolby atmos</span><span>&nbsp;&nbsp;</span><span class="outline">hospitality av</span><span>&nbsp;&nbsp;</span><span>cedia · avixa</span><span>&nbsp;&nbsp;</span></h2>
+  </div>
+</section>
+
+<!-- ============ INTRO ============ -->
+<section class="intro" id="about">
+  <div class="intro-eyebrow reveal"><span class="bar"></span> 01 · The ATG Vision</div>
+  <p class="intro-statement reveal reveal-1">
+    <b>Working with us is</b> <i>much more than receiving an AV scope</i> <b>— it's living in a space that performs the way it was designed to,</b> <i>quietly, reliably, and exactly to brief.</i>
+  </p>
+  <div class="intro-row">
+    <p class="intro-supporting reveal reveal-2">We work with homeowners, businesses and developers to design and integrate technology that enhances how people live and work. Our owners are hands-on throughout every project, ensuring a personalized and detail-driven experience from start to finish.</p>
+    <a href="#sectors" class="intro-cta reveal reveal-3">Discover<br/>our work →</a>
+  </div>
+</section>
+
+<!-- ============ KEYWORD STACK ============ -->
+<section class="kwall" style="padding:0 var(--pad);border-top:none;">
+  <div style="font-family:var(--display);font-weight:900;font-size:clamp(80px, 13vw, 220px);line-height:.88;text-transform:lowercase;letter-spacing:-.04em;padding:80px 0 120px;">
+    <div class="reveal">step into a <em style="font-family:var(--serif);font-style:italic;font-weight:400;color:var(--accent);text-transform:none;">world</em></div>
+    <div class="reveal reveal-1" style="-webkit-text-stroke:1px var(--fg-mute);color:transparent;padding-left:.4em;">of high-end</div>
+    <div class="reveal reveal-2">av integration.</div>
+  </div>
+</section>
+
+<!-- ============ RECOGNITIONS ============ -->
+<section class="recogs" id="recogs">
+  <div class="recogs-head">
+    <span class="num">— 02 / Recognitions</span>
+    <h2 class="reveal">Recent <em>recognitions</em><br/>&amp; flagship work.</h2>
+  </div>
+
+  <div class="recog">
+    <div class="recog-row reveal">
+      <div class="recog-num">01</div>
+      <div class="recog-meta">
+        <span>Year — <strong>2024</strong></span>
+        <span>Sector — <strong>Transit</strong></span>
+        <span>Scope — <strong>Multi-Site</strong></span>
+      </div>
+      <div class="recog-body">
+        <h3>Brightline <em>Florida Stations.</em></h3>
+        <p>Custom AV, lighting and display infrastructure across the Brightline rail network — engineered for daily passenger volume and 24/7 reliability. <i>"Their commitment to excellence sets them apart."</i></p>
+        <a href="#">Discover the project →</a>
+      </div>
+      <div class="recog-img" style="background-image:url('https://static.wixstatic.com/media/a358fe_22e282ff99ce48c983dfb87a52c949d8~mv2.jpg/v1/fit/w_600,h_450,q_90,enc_avif,quality_auto/a358fe_22e282ff99ce48c983dfb87a52c949d8~mv2.jpg')"></div>
+    </div>
+
+    <div class="recog-row reveal reveal-1">
+      <div class="recog-num">02</div>
+      <div class="recog-meta">
+        <span>Year — <strong>2023</strong></span>
+        <span>Sector — <strong>Hospitality</strong></span>
+        <span>Location — <strong>Anguilla</strong></span>
+      </div>
+      <div class="recog-body">
+        <h3>Zemi Beach <em>House Resort.</em></h3>
+        <p>Resort-wide audio, video and control integration across guest rooms, dining and beach venues — designed to disappear into the architecture without compromising performance.</p>
+        <a href="#">Discover the project →</a>
+      </div>
+      <div class="recog-img" style="background-image:url('https://static.wixstatic.com/media/a358fe_569dd35da33f4cd18226ce1dd0b33ae3~mv2.webp/v1/fit/w_600,h_450,q_90,enc_avif,quality_auto/a358fe_569dd35da33f4cd18226ce1dd0b33ae3~mv2.webp')"></div>
+    </div>
+
+    <div class="recog-row reveal">
+      <div class="recog-num">03</div>
+      <div class="recog-meta">
+        <span>Year — <strong>2023</strong></span>
+        <span>Sector — <strong>Education</strong></span>
+        <span>Location — <strong>Pinecrest</strong></span>
+      </div>
+      <div class="recog-body">
+        <h3>Gulliver Preparatory <em>School.</em></h3>
+        <p>Large-format LED video wall and pro-AV infrastructure across the campus athletic facility — broadcast-grade visuals for the pool deck and event programming.</p>
+        <a href="#">Discover the project →</a>
+      </div>
+      <div class="recog-img" style="background-image:url('https://static.wixstatic.com/media/a358fe_f954bbb4baa945909a4e0d09e9e5f789~mv2.jpg/v1/fit/w_600,h_450,q_90,enc_avif,quality_auto/a358fe_f954bbb4baa945909a4e0d09e9e5f789~mv2.jpg')"></div>
+    </div>
+
+    <div class="recog-row reveal reveal-1">
+      <div class="recog-num">04</div>
+      <div class="recog-meta">
+        <span>Year — <strong>2024</strong></span>
+        <span>Sector — <strong>Non-Profit</strong></span>
+        <span>Location — <strong>Miami</strong></span>
+      </div>
+      <div class="recog-body">
+        <h3>Make-A-Wish <em>South Florida.</em></h3>
+        <p>Headquarters AV refresh — conference, video and audio systems built for a team that needs to tell stories well. <i>"A true partner — exceptional service, every detail addressed."</i></p>
+        <a href="#">Discover the project →</a>
+      </div>
+      <div class="recog-img" style="background-image:url('https://static.wixstatic.com/media/a358fe_98e10a51d2c540fd82add2e3e43e80ce~mv2.jpg/v1/fit/w_600,h_450,q_90,enc_avif,quality_auto/a358fe_98e10a51d2c540fd82add2e3e43e80ce~mv2.jpg')"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTORS ============ -->
+<section class="sectors" id="sectors">
+  <div class="sectors-head">
+    <span class="num">— 03 / Solutions by sector</span>
+    <h2 class="reveal">Three practices,<br/><em>one studio.</em></h2>
+  </div>
+
+  <div class="sector-card reveal" id="residential">
+    <div class="sector-info">
+      <h3>Luxury <em>Residential.</em></h3>
+      <p>Home theater design, distributed audio, lighting control, smart home automation, and more — calibrated to disappear into the architecture and reappear at the touch of a screen.</p>
+      <div class="sector-data">
+        <div class="cell"><div class="lbl">Practice</div><div class="val">Residential</div></div>
+        <div class="cell"><div class="lbl">Scope</div><div class="val">Whole Home</div></div>
+        <div class="cell"><div class="lbl">Standards</div><div class="val">Crestron · C4</div></div>
+      </div>
+    </div>
+    <div class="sector-img">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_97ef36253ca34c15aea926a4a6f32069~mv2.jpg/v1/fill/w_1600,h_1280,fp_0.29_0.49,q_90,enc_avif,quality_auto/a358fe_97ef36253ca34c15aea926a4a6f32069~mv2.jpg')"></div>
+      <span class="tag">R · 01 — Residential</span>
+    </div>
+  </div>
+
+  <div class="sector-card reveal" id="commercial">
+    <div class="sector-info">
+      <h3>Workplaces &amp; <em>conference.</em></h3>
+      <p>LED video walls, conference solutions, distributed audio, Crestron automation, and more — built for offices, hospitality and education that have to perform every day.</p>
+      <div class="sector-data">
+        <div class="cell"><div class="lbl">Practice</div><div class="val">Commercial</div></div>
+        <div class="cell"><div class="lbl">Scope</div><div class="val">Multi-Room</div></div>
+        <div class="cell"><div class="lbl">Standards</div><div class="val">Crestron · Zoom</div></div>
+      </div>
+    </div>
+    <div class="sector-img">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_631120683aec40ac9c46b44d569770b9~mv2.jpg/v1/fill/w_1600,h_1280,fp_0.75_0.48,q_90,enc_avif,quality_auto/a358fe_631120683aec40ac9c46b44d569770b9~mv2.jpg')"></div>
+      <span class="tag">C · 02 — Commercial</span>
+    </div>
+  </div>
+
+  <div class="sector-card reveal" id="professional">
+    <div class="sector-info">
+      <h3>Stadiums &amp; <em>venues.</em></h3>
+      <p>Pro AV sound, video, lighting, staging, and more for stadiums, performing venues, and studios — infrastructure that holds up under broadcast load and live audiences.</p>
+      <div class="sector-data">
+        <div class="cell"><div class="lbl">Practice</div><div class="val">Professional</div></div>
+        <div class="cell"><div class="lbl">Scope</div><div class="val">Site-Wide</div></div>
+        <div class="cell"><div class="lbl">Standards</div><div class="val">CEDIA · AVIXA</div></div>
+      </div>
+    </div>
+    <div class="sector-img">
+      <div class="img" style="background-image:url('https://static.wixstatic.com/media/a358fe_5b5ea36e15ce452594ae1d15b7ae9530~mv2.jpg/v1/fill/w_1600,h_1280,fp_0.4_0.34,q_90,enc_avif,quality_auto/a358fe_5b5ea36e15ce452594ae1d15b7ae9530~mv2.jpg')"></div>
+      <span class="tag">P · 03 — Professional</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VALUES / WAY WE WORK ============ -->
+<section class="values" id="values">
+  <div class="values-head">
+    <span class="num">— 04 / The way we work</span>
+    <div class="values-stack">
+      <span class="l reveal">Discover</span>
+      <span class="l dim reveal reveal-1">the way</span>
+      <span class="l reveal reveal-2">we <em>work.</em></span>
+    </div>
+  </div>
+
+  <div class="values-grid">
+    <div class="value reveal">
+      <div class="num">01</div>
+      <h4>Owner-led<em>.</em></h4>
+      <p>Our owners are hands-on throughout every project — from schematic design to final calibration walkthrough.</p>
+    </div>
+    <div class="value reveal reveal-1">
+      <div class="num">02</div>
+      <h4>Quiet <em>technology.</em></h4>
+      <p>Systems that disappear into the architecture and reappear only when summoned — no visible cables, no clutter.</p>
+    </div>
+    <div class="value reveal reveal-2">
+      <div class="num">03</div>
+      <h4>Engineered to <em>last.</em></h4>
+      <p>Specified for the load it will actually see, terminated to spec, and documented so it can be serviced years on.</p>
+    </div>
+    <div class="value reveal reveal-3">
+      <div class="num">04</div>
+      <h4>Trusted <em>brands.</em></h4>
+      <p>Authorized dealers for Crestron, Control4 and Lutron — members of CEDIA and AVIXA. Equipment with a paper trail.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="faq" id="faq">
+  <div class="faq-head">
+    <span class="num">— 05 / FAQ</span>
+    <h2 class="reveal">Having another <em>question?</em></h2>
+    <p class="reveal reveal-1">Most prospective clients ask the same handful of things. The short answers live here — the long ones, we'd rather have over a coffee.</p>
+    <a href="mailto:info@atgamerica.com" class="faq-cta">Send a message →</a>
+  </div>
+
+  <div class="faq-list">
+    <div class="faq-item open">
+      <div class="faq-item-head">
+        <span class="faq-num">01</span>
+        <span class="faq-q">What sectors does ATG serve?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div><div class="faq-a-inner">ATG works across three practices: <b>Luxury Residential</b> (home theater, distributed audio, lighting, automation), <b>Commercial</b> (LED video walls, conferencing, signage), and <b>Professional</b> (stadiums, venues, studios). We are owner-led and project-led — every engagement is run end-to-end by a partner.</div></div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-item-head">
+        <span class="faq-num">02</span>
+        <span class="faq-q">Which control platforms do you specify?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div><div class="faq-a-inner">We are authorized dealers for <b>Crestron</b> and <b>Control4</b>, and members of <b>CEDIA</b> and <b>AVIXA</b>. We default to whichever platform fits the brief and the client's appetite for ongoing service — never the other way around.</div></div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-item-head">
+        <span class="faq-num">03</span>
+        <span class="faq-q">Do you work with architects and developers?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div><div class="faq-a-inner">Yes — most of our hospitality, transit and residential work is delivered alongside design teams. We can engage from <i>schematic</i> through <i>commissioning</i>, or step in to rescue an under-spec'd existing scope.</div></div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-item-head">
+        <span class="faq-num">04</span>
+        <span class="faq-q">Where are you based and how far do you travel?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div><div class="faq-a-inner">Two offices: <b>Miami, FL</b> and <b>Plano, TX</b>. We deliver across Florida, Texas and the Caribbean — Anguilla, Bahamas and the surrounding islands have all been served from Miami.</div></div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-item-head">
+        <span class="faq-num">05</span>
+        <span class="faq-q">Is there a typical project budget?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div><div class="faq-a-inner">Residential whole-home work tends to start in the low six figures; commercial and professional engagements scale with the count of rooms, walls and venues. We provide indicative ranges based on similar projects we've delivered before quoting in detail.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERS ============ -->
+<section class="partners">
+  <h2 class="partners-head reveal">The ATG <em>partners.</em></h2>
+  <div class="partners-grid">
+    <div class="partner">Crestron</div>
+    <div class="partner">Control4</div>
+    <div class="partner">Lutron</div>
+    <div class="partner">Sony</div>
+    <div class="partner">CEDIA</div>
+    <div class="partner">AVIXA</div>
+    <div class="partner">Focal</div>
+    <div class="partner">Sonos</div>
+  </div>
+</section>
+
+<!-- ============ FOOTER CTA ============ -->
+<section class="foot-cta" id="contact">
+  <span class="foot-cta-num">— 06 / Let's begin</span>
+  <h2 class="reveal">Let's <em>build</em><br/>something <em>quiet.</em></h2>
+
+  <div class="foot-cta-row">
+    <p class="lede reveal">Whether it's a residential, commercial or professional space, we tailor the solution <i>to fit your vision</i>. Share a few details — a partner will be in touch shortly.</p>
+    <div>
+      <div class="foot-cta-link">Email</div>
+      <a href="mailto:info@atgamerica.com" class="big">info@atgamerica.com</a>
+      <div class="foot-cta-link" style="margin-top:24px;">Phone</div>
+      <a href="tel:+19548354495" class="big">(954) 835-4495</a>
+    </div>
+    <div>
+      <div class="foot-cta-link">Miami office</div>
+      <a class="big">12100 SW 132nd Ct, Suite 114<br/>Miami, FL 33186</a>
+      <div class="foot-cta-link" style="margin-top:24px;">Texas office</div>
+      <a class="big">7000 Independence Pkwy, Suite 153<br/>Plano, TX 75025</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <h5>ATG · Advanced Technology Group</h5>
+      <p style="font-family:var(--sans);text-transform:none;letter-spacing:.01em;font-size:13px;color:var(--fg-dim);max-width:30ch;line-height:1.5;">High-end audio, video, lighting and automation — engineered, installed and supported by an owner-operated team since 2014.</p>
+    </div>
+    <div>
+      <h5>Practices</h5>
+      <a href="#residential">Residential</a>
+      <a href="#commercial">Commercial</a>
+      <a href="#professional">Professional</a>
+      <a href="#sectors">Portfolio</a>
+    </div>
+    <div>
+      <h5>Studio</h5>
+      <a href="#about">About ATG</a>
+      <a href="#values">How we work</a>
+      <a href="#recogs">Media &amp; Awards</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div>
+      <h5>Follow</h5>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+      <a href="#">Vimeo</a>
+    </div>
+  </div>
+  <div class="foot-base">
+    <span>© 2026 Advanced Technology Group · Lic # EF20001965</span>
+    <span>Concept 03 · Editorial Studio</span>
+  </div>
+</footer>
+
+<script>
+  // nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 24);
+  }, {passive:true});
+
+  // reveal observer
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+
+  // FAQ toggle
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+</script>
+
+</body>
+</html>
